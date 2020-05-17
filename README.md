@@ -17,7 +17,13 @@
   - `cd src`
   - `python3 main.py`
 
-![Image of Yaktocat](https://cdn.discordapp.com/attachments/711247415881236560/711608500052033556/Screenshot_2020-05-17_at_17.58.03.png)
-![Image of Yaktocat](https://cdn.discordapp.com/attachments/711247415881236560/711608677580275742/Screenshot_2020-05-17_at_17.58.46.png)
+### Usage
+1. Connect bot to server:
+  ![Connect bot](https://cdn.discordapp.com/attachments/711247415881236560/711608677580275742/Screenshot_2020-05-17_at_17.58.46.png)
+  
+2. Add to voice channel
+3. Enjoy!
+  ![Watch stats](https://cdn.discordapp.com/attachments/711247415881236560/711608500052033556/Screenshot_2020-05-17_at_17.58.03.png)
+
 
 
