@@ -53,17 +53,16 @@ class Interruption:
         self.recording_id = recordingManager.getAudio(start_timestamp, end_timestamp)
 
 
-class Jahoda:
-    def append(self, data):
-        print(f"IntJeMint: ({data.start_timestamp} - {data.end_timestamp}) | "
-              f"{data.from_user.name} INTERUPTED {data.to_user.name} | redId: {data.recording_id}")
+def printInt(data):
+    print(f"IntJeMint: ({data.start_timestamp} - {data.end_timestamp}) | "
+          f"{data.from_user.name} INTERUPTED {data.to_user.name} | redId: {data.recording_id}")
 
 
 class RecordingManager:
     users: Dict[str, User] = {}
     recordings: DefaultDict[str, List[Recording]] = defaultdict(list)
     recording_parts_with_voice: DefaultDict[str, List[RecordingPart]] = defaultdict(list)
-    interruptions = Jahoda()  #: List[Interruption]
+    interruptions: List[Interruption] = []  # Jahoda()  #
 
     def __init__(self, recordingsFolder: str):
         self.recordingsFolder = recordingsFolder
@@ -86,17 +85,20 @@ class RecordingManager:
         self.users[rec.user.id].speak_time += sum([r.getLength() for r in partsWithVoice])
 
         # Check interruptions
-        # for new_part in partsWithVoice:
-        #     for old_part in self.__getOtherUsersRecordingParts(rec.user.id):
-        #         if self.__getOverlap(new_part, old_part) > 100:
-        #             start = max(0, min(new_part.start_timestamp, old_part.start_timestamp) - 2000)
-        #             end = max(new_part.end_timestamp, old_part.end_timestamp) + 2000
-        #             if old_part.start_timestamp < new_part.start_timestamp:
-        #                 self.interruptions.append(
-        #                     Interruption(self, start, end, new_part.recording.user, old_part.recording.user))
-        #             else:
-        #                 self.interruptions.append(
-        #                     Interruption(self, start, end, old_part.recording.user, new_part.recording.user))
+        for new_part in partsWithVoice:
+            for old_part in self.__getOtherUsersRecordingParts(rec.user.id):
+                if self.__getOverlap(new_part, old_part) > 100:
+                    start = max(0, min(new_part.start_timestamp, old_part.start_timestamp) - 2000)
+                    end = max(new_part.end_timestamp, old_part.end_timestamp) + 2000
+                    if old_part.start_timestamp < new_part.start_timestamp:
+                        interruption = Interruption(self, start, end, new_part.recording.user, old_part.recording.user)
+                        printInt(interruption)
+                        self.interruptions.append(interruption)
+                    else:
+                        interruption = Interruption(self, start, end, old_part.recording.user, new_part.recording.user)
+                        printInt(interruption)
+                        self.interruptions.append(interruption)
+
 
     def __getOtherUsersRecordingParts(self, current_user_id: str) -> List[RecordingPart]:
         recordings = []
@@ -105,6 +107,7 @@ class RecordingManager:
                 parts_with_voice = self.recording_parts_with_voice[userId][-10:]
                 recordings.extend(parts_with_voice)
         return recordings
+
 
     def getAudio(self, start_timestamp: int, end_timestamp: int) -> str:
         """
@@ -150,6 +153,7 @@ class RecordingManager:
         finalAudio.export(f"{self.recordingsFolder}/{filename}", format="wav")
         return fileId
 
+
     @staticmethod
     def __getFramesToInclude(recording: Recording, start_timestamp: int, end_timestamp: int) -> List[bytes or None]:
         includedFrames = [None] * int((recording.start_timestamp - start_timestamp) // 30)
@@ -161,6 +165,7 @@ class RecordingManager:
                 else:
                     includedFrames.append(frame.bytes)
         return includedFrames
+
 
     @staticmethod
     def __getOverlap(a: RecordingPart, b: RecordingPart):
