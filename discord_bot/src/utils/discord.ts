@@ -56,13 +56,17 @@ const read15SecondAudio = (audioStream, user: discord.User) => {
     if (!audioStream.destroyed) {
         const filename = `${uuid4()}.pcm`
 
-        const fileStream = fs.createWriteStream(`${AUDIO_FOLDER}/${filename}`)
+        const path = `${AUDIO_FOLDER}/${filename}`
+        const fileStream = fs.createWriteStream(path)
         audioStream.pipe(fileStream)
 
         setTimeout(() => {
             audioStream.unpipe(fileStream)
+            // TODO - send audio file path to audio_recognition
+            // TODO - change to about second or 2, because when user is not talking, nothing is sent.
+            //  this can cause getting out of sync with the audio.
             read15SecondAudio(audioStream, user)
-        }, 15_000)
+        }, 2_000)
     }
 }
 

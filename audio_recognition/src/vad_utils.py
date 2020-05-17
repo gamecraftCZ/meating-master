@@ -5,12 +5,13 @@ import wave
 from typing import List
 
 import webrtcvad
+from pydub import AudioSegment
 
 
 # Inspiration: https://github.com/wiseman/py-webrtcvad/blob/master/example.py
 
 
-def read_wave(path) -> (bytes, int):
+def read_wave(path: str) -> (bytes, int):
     """Reads a .wav file.
     Takes the path, and returns (PCM audio data, sample rate).
     :returns (data, sample_rate)
@@ -24,6 +25,15 @@ def read_wave(path) -> (bytes, int):
         assert sample_rate in (8000, 16000, 32000, 48000)
         pcm_data = wf.readframes(wf.getnframes())
         return pcm_data, sample_rate
+
+
+def read_pcm(path: str) -> (bytes, int):
+    # Discord audio:
+    # Signed 16-bit PCM as the encoding, a Little-endian byte order, 2 Channels (Stereo) and a sample rate of 48000Hz.
+    audio = AudioSegment.from_file(path, "s16le", "pcm_s16le", sample_width=2, frame_rate=48000, channels=2)\
+                        .set_channels(1)
+    audio.export(path.replace(".pcm", ".wav"), "wav", bitrate=48000)
+    return read_wave(path.replace(".pcm", ".wav"))
 
 
 def write_wave(path, audio, sample_rate):
