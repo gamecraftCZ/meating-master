@@ -1,5 +1,5 @@
 import Discord from 'discord.js';
-import {channelUpdate, receiveMessageHandler, serverJoinHandler} from './utils/discord_handlers';
+import {channelUpdate, receiveMessageHandler, serverJoinHandler, leaveChannel} from './utils/discord_handlers';
 import express from 'express';
 import cors from 'cors';
 import { BOT_JOIN_URL, PORT, WEBSOCKET_PORT } from './constants';
@@ -10,6 +10,7 @@ require('dotenv').config();
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 
 const server = http.createServer(app);
 
@@ -17,11 +18,19 @@ const io = socketIo(server);
 
 const client = new Discord.Client();
 
+let SOCKET;
+
 io.on('connection', (socket) => {
+	SOCKET = socket;
 	console.log('New client connected');
 
 	client.on('guildCreate', () => serverJoinHandler(socket));
 	client.on('message', (message) => receiveMessageHandler(client, message, socket));
+	
+	app.get('/leaveDiscordChannel', (req, res) => {
+		leaveChannel(SOCKET);
+		return res.status(200).send();
+	});
 
 	socket.on('disconnect', () => {
 		console.log('Client disconnected');
@@ -36,19 +45,11 @@ client.on('ready', () => {
 
 client.on("voiceStateUpdate", (...args) => channelUpdate(client, ...args))
 
-
-
 client.login(process.env.DISCORD_SECRET);
 
 app.get('/getDiscordBotInviteLink', (req, res) => {
 	res.status(200).json({
 		discordBotInviteLink: BOT_JOIN_URL
-	});
-});
-
-app.post('/leaveDiscordChannel', (req, res) => {
-	res.status(200).json({
-		discordBotInviteLink: BOT_JOIN_URL,
 	});
 });
 

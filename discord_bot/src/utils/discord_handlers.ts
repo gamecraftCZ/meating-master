@@ -6,6 +6,7 @@ import {Readable} from 'stream';
 import fs from 'fs';
 import axios from "axios"
 import {resolve as toAbsolutepath} from 'path'
+import { Socket } from "socket.io";
 
 let watchedChannelId = "---";
 let voiceConnection: discord.VoiceConnection = null;
@@ -20,7 +21,7 @@ const stopListeningUser = (user: discord.User) => {
     }
 }
 
-export const serverJoinHandler = (socket) => {
+export const serverJoinHandler = (socket: Socket) => {
     console.log('Joined server');
     socket.emit('discordStepUpdate', 1);
 };
@@ -101,7 +102,7 @@ export const channelUpdate = (
     }
 };
 
-export const receiveMessageHandler = async (client: discord.Client, message: discord.Message, socket) => {
+export const receiveMessageHandler = async (client: discord.Client, message: discord.Message, socket: Socket) => {
     try {
         if (message?.author?.bot) {
             return;
@@ -109,18 +110,29 @@ export const receiveMessageHandler = async (client: discord.Client, message: dis
         if (message.content === "/meat") {
             // Only try to join the sender's voice channel if they are in one themselves
             if (message?.member?.voice?.channel) {
-                await message.delete()
                 watchedChannelId = message.member.voice.channel.id;
                 voiceConnection = await message.member.voice.channel.join();
                 socket.emit('discordStepUpdate', 2);
-                message.member.voice.channel.members
-                    .filter(m => m.user.id != client.user.id)  // To net listen to itself
-                    .forEach(member => startListeningUser(member.user));
+                //message.member.voice.channel.members
+                  //  .filter(m => m.user.id != client.user.id)  // To net listen to itself
+                    //.forEach(member => startListeningUser(member.user));
+                await message.delete(); // don't fucking move
             } else {
                 message.reply('You need to join a voice channel first!');
             }
         }
     } catch (err) {
         console.error('Error while handling message: ', err);
+    }
+}
+
+export const leaveChannel = (socket: Socket) => {
+    try {
+        socket.emit('discordStepUpdate', 0);
+        if (voiceConnection) {
+            voiceConnection.disconnect(); // This line gets executed successfully
+        }
+    } catch (err) {
+        console.error('Error while leaving channel: ', err);
     }
 }

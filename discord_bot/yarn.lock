@@ -172,6 +172,13 @@
     "@types/express-serve-static-core" "*"
     "@types/mime" "*"
 
+"@types/socket.io@^2.1.5":
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/@types/socket.io/-/socket.io-2.1.5.tgz#3d792b1cc15b84c7aa079f28ee4aa2bec2ed7fbf"
+  integrity sha512-1eItGHI9nI8FMXPZNXdr5QP95Gr/CSQqVQ0ZyBhd4SMbLMFuB7cIbmyl66t85mvx9WAvhl1vbPA+cuwv3j9W4g==
+  dependencies:
+    "@types/node" "*"
+
 "@typescript-eslint/eslint-plugin@^2.33.0":
   version "2.33.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-2.33.0.tgz#d6c8319d5011b4783bb3d2dadf105d8bdd499bd5"

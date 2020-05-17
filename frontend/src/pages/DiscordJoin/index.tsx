@@ -25,7 +25,6 @@ const DiscordJoin = observer(() => {
 
   useEffect(() => {
     if (store.discordStep === 2) {
-      console.log('store.discordStep is 2');
       setTimeout(() => {
         setRedirect('meeting-in-progress');
       }, 1000)
