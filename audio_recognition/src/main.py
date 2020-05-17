@@ -38,9 +38,21 @@ def endMeeting():
     meetingEnd = time()
     return "Okajda, Kokajda"
 
+@app.route('/pobodamVlckovou', methods=["GET", "POST"])
+def clearMeeting():
+    print("POBODAM!")
+    global recordingManager
+    global meetingStart
+    global meetingEnd
+    recordingManager = RecordingManager(recordingManager.recordingsFolder)
+    meetingStart = 0
+    meetingEnd = 0
+    return "OK"
+
 
 @app.route('/newRecording', methods=["POST"])
 def newRecording():
+    global recordingManager
     data = json.loads(request.data)
     filepath = data["filepath"]
     recordingId = data["recordingId"]
@@ -56,10 +68,16 @@ def newRecording():
 
 @app.route('/getInfo', methods=["GET"])
 def getInfo():
-    t = time()
+    global recordingManager
+    meeting_length = int(((meetingEnd or time()) - (meetingStart or time())) * 1000)
+    if len(recordingManager.users.values()) > 0 and type(meeting_length) == int:
+        optimal_speaking_time = meeting_length / len(recordingManager.users.keys())
+    else:
+        optimal_speaking_time = 0
     return app.response_class(
         response=json.dumps({
-            "meeting_length": ((meetingEnd or t) - (meetingStart or t)) or "Ahojky Ondro",
+            "meeting_length": meeting_length or None,
+            "optimal_meeting_time": optimal_speaking_time or None,
             "users": [{"name": u.name, "id": u.id, "talkTime": u.speak_time}
                       for u in recordingManager.users.values()],
             "interruptions":
@@ -84,6 +102,7 @@ def getInfo():
 
 @app.route('/recordings/<recordingId>', methods=["GET"])
 def getRecording(recordingId: str):
+    global recordingManager
     if is_safe_path(os.path.abspath(recordingManager.recordingsFolder),
                     f'{os.path.abspath(recordingManager.recordingsFolder)}/{recordingId}.wav'):
         try:
@@ -95,4 +114,4 @@ def getRecording(recordingId: str):
 
 
 if __name__ == '__main__':
-    app.run(port=2986)
+    app.run(port=2986, host="0.0.0.0")

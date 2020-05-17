@@ -3,14 +3,15 @@ import * as ReactDOM from 'react-dom';
 import { Router, Switch } from 'react-router-dom';
 import 'mobx-react-lite/batchingForReactDom';
 
-import history from '@helpers/history';
 import App from './App';
+import { RobustRouter } from 'robust-react-router';
+import { robust } from '@helpers/history';
 
 ReactDOM.render(
-	<Router history={history}>
+	<RobustRouter router={robust}>
 		<Switch>
 			<App />
 		</Switch>
-	</Router>,
+	</RobustRouter>,
 	document.getElementById('root')
 );

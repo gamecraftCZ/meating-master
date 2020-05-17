@@ -7,28 +7,29 @@ import './style.sass';
 import store from '@stores/index.ts';
 import { useWindowSize } from '@hooks/index.ts';
 import { getZoomAuthLink } from '@services/index.ts';
+import { robust } from '@helpers/history';
 
 const { Step } = Steps;
 
 export default function ZoomJoin() {
-	const [state, setState] = useState({
-		toDashboard: false,
-	});
-	const [zoomLink, setZoomLink] = useState('');
+  const [state, setState] = useState({
+    toDashboard: false,
+  });
+  const [zoomLink, setZoomLink] = useState('');
 
-	const windowSize = useWindowSize();
+  const windowSize = useWindowSize();
 
-	useEffect(() => {
+  useEffect(() => {
     getZoomAuthLink().then((zoomLink) => {
       setZoomLink(zoomLink);
     });
   }, []);
 
-	if (state.toDashboard) {
-		return <Redirect to='/' />
-	}
+  if (state.toDashboard) {
+    return <Redirect to={robust.createPath} />;
+  }
 
-	const renderConnectButton = () => {
+  const renderConnectButton = () => {
     if (store.zoomStep !== 0) return;
 
     return (
@@ -46,7 +47,7 @@ export default function ZoomJoin() {
     );
   };
 
-	return (
+  return (
     <div className="ZoomJoin">
       <PageHeader
         title="Go Back"

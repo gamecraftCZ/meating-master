@@ -7,25 +7,25 @@ import { leaveDiscordChannel } from '@services/';
 import Results from '../Results';
 
 import './style.sass';
+import { robust } from '@helpers/history';
+import { RobustKeys } from 'robust-react-router/dist/typescriptMagic';
 
 export default function MeetingInProgress() {
-	const [state, setState] = useState({
-		redirect: ''
-	});
+  const [state, setState] = useState<{ redirect: RobustKeys<typeof robust> }>();
 
-	const endMeeting = async () => {
-		await leaveDiscordChannel();
+  const endMeeting = async () => {
+    await leaveDiscordChannel();
 
-		setState({
-			redirect: '/results'
-		});
-	}
+    setState({
+      redirect: 'RESULTS',
+    });
+  };
 
-	if (state.redirect !== '') {
-		return <Redirect to={state.redirect} />;
-	}
+  if (state.redirect) {
+    return <Redirect to={state.redirect} />;
+  }
 
-	return (
+  return (
     <div className="MeetingInProgress">
       <div className="headingWrapper">
         <h1>Meeting in Progress</h1>
@@ -35,7 +35,7 @@ export default function MeetingInProgress() {
           End Meeting
         </Button>
       </div>
-			<Results keepFetching={true} />
+      <Results keepFetching={true} />
     </div>
   );
 }

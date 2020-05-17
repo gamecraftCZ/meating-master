@@ -6,7 +6,7 @@ import {Readable} from 'stream';
 import fs from 'fs';
 import axios from "axios"
 import {resolve as toAbsolutepath} from 'path'
-import { Socket } from "socket.io";
+import {Socket} from "socket.io";
 
 let watchedChannelId = "---";
 let voiceConnection: discord.VoiceConnection = null;
@@ -55,7 +55,7 @@ const readAudio = (audioStream, user: discord.User) => {
                     recordingId: recId,
                     startTimestamp: new Date().getTime(),
                     endTimestamp: new Date().getTime() + 3_000,
-                    user: { name: user.username, id: user.id },
+                    user: {name: user.username, id: user.id},
                 });
                 // Must be about second or two, because when user is not talking, no data is sent.
                 //  This can cause getting out of sync with the audio.
@@ -87,16 +87,16 @@ const startListeningUser = (user: discord.User) => {
                 }
             }
 
-            voiceConnection.play(new Silence(), { type: 'opus' });
+            voiceConnection.play(new Silence(), {type: 'opus'});
 
             // https://discordjs.guide/voice/receiving-audio.html
-            const audio = voiceConnection.receiver.createStream(user, { mode: 'pcm', end: 'manual' });
+            const audio = voiceConnection.receiver.createStream(user, {mode: 'pcm', end: 'manual'});
 
             readAudio(audio, user);
         }
     } catch (err) {
         console.error('Error while starting to listen to user: ', err);
-    }   
+    }
 }
 
 export const channelUpdate = (
@@ -143,8 +143,8 @@ export const receiveMessageHandler = async (client: discord.Client, message: dis
                 voiceConnection = await message.member.voice.channel.join();
                 socket.emit('discordStepUpdate', 2);
                 message.member.voice.channel.members
-                   .filter(m => m.user.id != client.user.id)  // To not listen to itself
-                   .forEach(member => startListeningUser(member.user));
+                    .filter(m => m.user.id != client.user.id)  // To not listen to itself
+                    .forEach(member => startListeningUser(member.user));
                 await message.delete(); // don't fucking move
             } else {
                 message.reply('You need to join a voice channel first!');

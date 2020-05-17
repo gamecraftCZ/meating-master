@@ -8,11 +8,13 @@ import { useWindowSize } from '@hooks/';
 import { getDiscordBotLink } from '@services/';
 import './style.sass';
 import store from '@stores/index.ts';
+import { RobustKeys } from 'robust-react-router/dist/typescriptMagic';
+import { robust } from '@helpers/history';
 
 const { Step } = Steps;
 
 const DiscordJoin = observer(() => {
-  const [redirect, setRedirect] = useState('');
+  const [redirect, setRedirect] = useState<RobustKeys<typeof robust>>();
   const [discordLink, setDiscordLink] = useState('');
 
   const windowSize = useWindowSize();
@@ -26,12 +28,12 @@ const DiscordJoin = observer(() => {
   useEffect(() => {
     if (store.discordStep === 2) {
       setTimeout(() => {
-        setRedirect('meeting-in-progress');
-      }, 1000)
+        setRedirect('MEETING_IN_PROGRESS');
+      }, 1000);
     }
   }, [store.discordStep]);
 
-  if (redirect !== '') {
+  if (redirect) {
     return <Redirect to={redirect} />;
   }
 
@@ -55,10 +57,7 @@ const DiscordJoin = observer(() => {
 
   return (
     <div className="DiscordJoin">
-      <PageHeader
-        title="Go Back"
-        onBack={() => setRedirect('/')}
-      />
+      <PageHeader title="Go Back" onBack={() => setRedirect('JOIN')} />
       <div className="stepsContainer">
         <Steps
           current={store.discordStep}
@@ -72,6 +71,6 @@ const DiscordJoin = observer(() => {
       {renderConnectButton()}
     </div>
   );
-}); 
+});
 
 export default DiscordJoin;

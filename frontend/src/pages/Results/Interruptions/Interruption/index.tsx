@@ -7,25 +7,24 @@ import { IInterruptionData } from '../index';
 import { RECORDINGS_URL } from '@constants/urls';
 
 export interface IInterruptionProps {
-	interruption: IInterruptionData
+  interruption: IInterruptionData;
 }
 
 export default function Interruption(props: IInterruptionProps) {
-
-	return (
+  return (
     <div className="Interruption">
-      <p className='event'>
-				<b className='interruptor'>{props.interruption.from.name}</b>
-				interrupted
-				<b>{props.interruption.to.name}</b>
-			</p>
+      <p className="event">
+        <b className="interruptor">{props.interruption.from.name}</b>
+        interrupted
+        <b>{props.interruption.to.name}</b>
+      </p>
 
-			<div className='recording'>
-				<ReactAudioPlayer
-					src={RECORDINGS_URL + props.interruption.recordingId}
-					controls
-				/>
-			</div>
+      <div className="recording">
+        <ReactAudioPlayer
+          src={RECORDINGS_URL + props.interruption.recordingId}
+          controls
+        />
+      </div>
     </div>
   );
 }
