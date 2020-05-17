@@ -1,3 +1,4 @@
 discord_bot/node_modules
 discord_bot/dist
+discord_bot/.env
 audio_recognition/node_modules
