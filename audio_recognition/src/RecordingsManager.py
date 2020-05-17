@@ -68,39 +68,41 @@ class RecordingManager:
     def __init__(self, recordingsFolder: str):
         self.recordingsFolder = recordingsFolder
 
-    def getTalkTime(self, userId: str) -> int:
-        return sum([r.getLength() for r in self.recording_parts_with_voice[userId]])
-
     def newRecording(self, rec: Recording):
         """
         Add new Recording clip to the Manager.
         """
         self.recordings[rec.user.id].append(rec)
+        self.recordings[rec.user.id] = self.recordings[rec.user.id][-10:]
 
-        self.users[rec.user.id] = rec.user
+        if not self.users.get(rec.user.id):
+            self.users[rec.user.id] = rec.user
 
         segmentsWithVoice = detect_human_voice(rec.audio, rec.sample_rate)
         partsWithVoice = [RecordingPart.fromSegment(rec, part) for part in segmentsWithVoice]
         self.recording_parts_with_voice[rec.user.id].extend(partsWithVoice)
+        self.recording_parts_with_voice[rec.user.id] = self.recording_parts_with_voice[rec.user.id][-50:]
+
+        self.users[rec.user.id].speak_time += sum([r.getLength() for r in partsWithVoice])
 
         # Check interruptions
-        for new_part in partsWithVoice:
-            for old_part in self.__getOtherUsersRecordingParts(rec.user.id):
-                if self.__getOverlap(new_part, old_part) > 100:
-                    start = max(0, min(new_part.start_timestamp, old_part.start_timestamp) - 2000)
-                    end = max(new_part.end_timestamp, old_part.end_timestamp) + 2000
-                    if old_part.start_timestamp < new_part.start_timestamp:
-                        self.interruptions.append(
-                            Interruption(self, start, end, new_part.recording.user, old_part.recording.user))
-                    else:
-                        self.interruptions.append(
-                            Interruption(self, start, end, old_part.recording.user, new_part.recording.user))
+        # for new_part in partsWithVoice:
+        #     for old_part in self.__getOtherUsersRecordingParts(rec.user.id):
+        #         if self.__getOverlap(new_part, old_part) > 100:
+        #             start = max(0, min(new_part.start_timestamp, old_part.start_timestamp) - 2000)
+        #             end = max(new_part.end_timestamp, old_part.end_timestamp) + 2000
+        #             if old_part.start_timestamp < new_part.start_timestamp:
+        #                 self.interruptions.append(
+        #                     Interruption(self, start, end, new_part.recording.user, old_part.recording.user))
+        #             else:
+        #                 self.interruptions.append(
+        #                     Interruption(self, start, end, old_part.recording.user, new_part.recording.user))
 
     def __getOtherUsersRecordingParts(self, current_user_id: str) -> List[RecordingPart]:
         recordings = []
         for userId in self.recording_parts_with_voice:
             if userId != current_user_id:
-                parts_with_voice = self.recording_parts_with_voice[userId][-5:]
+                parts_with_voice = self.recording_parts_with_voice[userId][-10:]
                 recordings.extend(parts_with_voice)
         return recordings
 

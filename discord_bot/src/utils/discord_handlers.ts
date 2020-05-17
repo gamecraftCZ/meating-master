@@ -9,13 +9,14 @@ import {resolve as toAbsolutepath} from 'path'
 
 let watchedChannelId = "---";
 let voiceConnection: discord.VoiceConnection = null;
-const usersListening: { user: discord.User; audio }[] = [];
+let usersListening: { user: discord.User; audio }[] = [];
 
 const stopListeningUser = (user: discord.User) => {
     console.log("Stopping listen for user: ", user.username);
     const listener = usersListening.find(u => u.user.id == user.id)
     if (listener) {
         listener.audio.destroy()
+        usersListening = usersListening.filter(u => u.user.id != user.id)
     }
 }
 
@@ -35,22 +36,28 @@ const readAudio = (audioStream, user: discord.User) => {
 
         setTimeout(() => {
             audioStream.unpipe(fileStream)
+            fileStream.close()
             axios.post("http://localhost:2986/newRecording", {
                 filepath: toAbsolutepath(path),
                 recordingId: recId,
                 startTimestamp: new Date().getUTCMilliseconds(),
-                endTimestamp: new Date().getUTCMilliseconds() + 2_000,
+                endTimestamp: new Date().getUTCMilliseconds() + 3_000,
                 user: {name: user.username, id: user.id}
-            }).catch(e => console.error("Cant send audio for recognition, error: ", e))
+            }).catch(e => console.error("Cant send audio for recognition."))
             // Must be about second or two, because when user is not talking, no data is sent.
             //  This can cause getting out of sync with the audio.
             readAudio(audioStream, user)
-        }, 2_000)
+        }, 3_000)
+    } else {
+        audioStream.close()
     }
 }
 
 // https://discordjs.guide/voice/receiving-audio.html
 const startListeningUser = (user: discord.User) => {
+    if (usersListening.find(u => u.user.id == user.id)) {
+        return
+    }
     console.log("Starting listen for user: ", user.username);
     if (voiceConnection) {
         // Must send silence to start listening. issue: https://github.com/discordjs/discord.js/issues/2929

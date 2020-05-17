@@ -9,6 +9,7 @@ app = Flask(__name__)
 
 recordingManager = RecordingManager("../../_temp_audio")
 
+
 @app.route('/newRecording', methods=["POST"])
 def newRecording():
     data = json.loads(request.data)
@@ -24,13 +25,11 @@ def newRecording():
     return "OK"
 
 
-
-@app.route('/getInfo')
+@app.route('/getInfo', methods=["GET"])
 def getInfo():
     return json.dumps({
-        "users": [{
-            {"name": u.name, "id": u.id, "talkTime": recordingManager.getTalkTime(u.id)}
-        } for u in recordingManager.users.values()],
+        "users": [{"name": u.name, "id": u.id, "talkTime": u.speak_time}
+                  for u in recordingManager.users.values()],
         # "interruptions":
         #     [{
         #         "from": {
