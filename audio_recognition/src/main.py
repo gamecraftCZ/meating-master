@@ -56,9 +56,10 @@ def newRecording():
 
 @app.route('/getInfo', methods=["GET"])
 def getInfo():
+    t = time()
     return app.response_class(
         response=json.dumps({
-            "meeting_length": ((meetingEnd or time()) - (meetingStart or time())) or "Ahojky Ondro",
+            "meeting_length": ((meetingEnd or t) - (meetingStart or t)) or "Ahojky Ondro",
             "users": [{"name": u.name, "id": u.id, "talkTime": u.speak_time}
                       for u in recordingManager.users.values()],
             "interruptions":

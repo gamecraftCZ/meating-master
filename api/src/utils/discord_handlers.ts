@@ -45,7 +45,7 @@ const readAudio = (audioStream, user: discord.User) => {
                 startTimestamp: new Date().getTime(),
                 endTimestamp: new Date().getTime() + 3_000,
                 user: {name: user.username, id: user.id}
-            }).catch(e => console.error("Cant send audio for recognition."))
+            })
             // Must be about second or two, because when user is not talking, no data is sent.
             //  This can cause getting out of sync with the audio.
             readAudio(audioStream, user)
@@ -88,7 +88,6 @@ export const channelUpdate = (
 ) => {
     usersListening = []
     if (newVoice.member.user.id == client.user.id) {
-        console.log('BOT will not be listening to itself.');
         return;
     }
 

@@ -30,8 +30,8 @@ export default function SpeakTime(props: ISpeakTimeProps) {
 	return (
     <div className='SpeakTime'>
       <div className="headingsWrapper">
-        <h2>Optimal speak time per person: {props.optimalSpeakTime} minutes</h2>
-        <h2>Meeting length: {props.totalMeetingTime} minutes</h2>
+        <h2>Optimal speak time per person: {Math.round(props.optimalSpeakTime * 10) / 10} minutes</h2>
+        <h2>Meeting length: {Math.round(props.totalMeetingTime * 10) / 10} minutes</h2>
       </div>
       {renderSpeakTimeBars()}
     </div>

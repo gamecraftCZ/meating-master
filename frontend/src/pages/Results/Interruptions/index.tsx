@@ -3,10 +3,17 @@ import * as React from 'react';
 import './style.sass';
 import Interruption from './Interruption';
 
+export interface IUser {
+	id: number
+	name: string
+}
+
 export interface IInterruptionData {
-	interruptee: string
-	interruptor: string
-	audioId: string
+	from: IUser
+	to: IUser
+	recordingId: number
+	startTimestamp: number
+	endTimestamp: number
 }
 
 export interface IInterruptionsProps {
