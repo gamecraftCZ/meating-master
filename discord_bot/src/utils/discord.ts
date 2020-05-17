@@ -3,29 +3,30 @@ import {sleep} from "./utils"
 import wav from "wav"
 import {AUDIO_FOLDER} from "../constants";
 import {v4 as uuid4} from 'uuid';
-const { Readable } = require('stream');
+import { Readable } from 'stream';
 
 let watchedChannelId = "---";
 let voiceConnection: discord.VoiceConnection = null;
-let usersListening: { user: discord.User, audio }[] = [];
+const usersListening: { user: discord.User; audio }[] = [];
 
-export const channelUpdate = (client: discord.Client, oldVoice: discord.VoiceState, newVoice: discord.VoiceState) => {
-    if (newVoice.member.user.id == client.user.id) {
-        console.log("BOT will not be listening to itself.")
-        return
-    }
+const read15SecondAudio = (audioStream, user: discord.User) => {
+	sleep(2_000).then(() => {
+		const data = audioStream.read(96_000 * 2);
 
-    if (newVoice.channelID == watchedChannelId) {
-        const user = newVoice.member;
-        console.log("New user joined: ", user.user.username);
-        startListeningUser(user.user);
-    }
-    if (oldVoice.channelID == watchedChannelId) {
-        const user = newVoice.member;
-        console.log("User left: ", user.user.username);
-        stopListeningUser(user.user);
-    }
-}
+		const filename = `${uuid4()}.wav`;
+		wav.FileWriter(`${AUDIO_FOLDER}/${filename}`, {
+			endianness: 'LE',
+			channels: 2,
+			sampleRate: 48000,
+			bitDepth: 16,
+		});
+	});
+};
+
+export const serverJoinHandler = (socket) => {
+    console.log('Joined server');
+    socket.emit('discordStepUpdate', 1);
+}; 
 
 // https://discordjs.guide/voice/receiving-audio.html
 const startListeningUser = (user: discord.User) => {
@@ -40,7 +41,7 @@ const startListeningUser = (user: discord.User) => {
                 this.destroy();
             }
         }
-        // @ts-ignore
+
         voiceConnection.play(new Silence(), { type: 'opus' });
 
         // https://discordjs.guide/voice/receiving-audio.html
@@ -56,37 +57,41 @@ const startListeningUser = (user: discord.User) => {
         // const data = audio.read(96_000 * 2)
         // console.log("data: ", data)
 
-        read15SecondAudio(audio, user)
+        // read15SecondAudio(audio, user)
     }
-}
-
-const read15SecondAudio = (audioStream, user: discord.User) => {
-    sleep(2_000).then(() => {
-        const data = audioStream.read(96_000 * 2)
-        console.log("audioStream - data: ", data)
-
-
-        const filename = `${uuid4()}.wav`
-        wav.FileWriter(`${AUDIO_FOLDER}/${filename}`, {
-            "endianness": "LE",
-            "channels": 2,
-            "sampleRate": 48000,
-            "bitDepth": 16
-        })
-
-        wav.
-    })
 }
 
 const stopListeningUser = (user: discord.User) => {
-    console.log("Stopping listen for user: ", user.username);
-    const listener = usersListening.find(u => u.user.id == user.id)
-    if (listener) {
-        // voiceConnection.
-    }
-}
+	console.log('Stopping listen for user: ', user.username);
+	const listener = usersListening.find((u) => u.user.id == user.id);
+	if (listener) {
+		// voiceConnection.
+	}
+};
 
-export const receiveMessageHandler = async (client: discord.Client, message: discord.Message) => {
+export const channelUpdate = (
+	client: discord.Client,
+	oldVoice: discord.VoiceState,
+	newVoice: discord.VoiceState
+) => {
+	if (newVoice.member.user.id == client.user.id) {
+		console.log('BOT will not be listening to itself.');
+		return;
+	}
+
+	if (newVoice.channelID == watchedChannelId) {
+		const user = newVoice.member;
+		console.log('New user joined: ', user.user.username);
+		startListeningUser(user.user);
+	}
+	if (oldVoice.channelID == watchedChannelId) {
+		const user = newVoice.member;
+		console.log('User left: ', user.user.username);
+		stopListeningUser(user.user);
+	}
+};
+
+export const receiveMessageHandler = async (client: discord.Client, message: discord.Message, socket) => {
     try {
         if (message?.author?.bot) {
             return;
@@ -94,12 +99,13 @@ export const receiveMessageHandler = async (client: discord.Client, message: dis
         if (message.content === "/meat") {
             // Only try to join the sender's voice channel if they are in one themselves
             if (message?.member?.voice?.channel) {
-                await message.delete()
                 watchedChannelId = message.member.voice.channel.id;
                 voiceConnection = await message.member.voice.channel.join();
+                socket.emit('discordStepUpdate', 2);
                 message.member.voice.channel.members
                     .filter(m => m.user.id != client.user.id)  // To net listen to itself
                     .forEach(member => startListeningUser(member.user));
+                await message.delete();
             } else {
                 message.reply('You need to join a voice channel first!');
             }

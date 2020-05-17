@@ -1,4 +1,5 @@
 export const PORT = 3001;
+export const WEBSOCKET_PORT = 3002;
 export const BOT_JOIN_URL =
-					'https://discord.com/api/oauth2/authorize?client_id=711374710042263582&permissions=8&scope=bot';
-export const AUDIO_FOLDER = "../_temp_audio"
+					'https://discord.com/api/oauth2/authorize?client_id=711344691429244929&permissions=34679808&scope=bot';
+export const AUDIO_FOLDER = "../_temp_audio";
