@@ -34,13 +34,17 @@ client.on('ready', () => {
 
 client.on("voiceStateUpdate", (...args) => channelUpdate(client, ...args))
 
-
-
 client.login(process.env.DISCORD_SECRET);
 
 app.get('/getDiscordBotInviteLink', (req, res) => {
 	res.status(200).json({
 		discordBotInviteLink: BOT_JOIN_URL
+	});
+});
+
+app.post('/leaveDiscordChannel', (req, res) => {
+	res.status(200).json({
+		discordBotInviteLink: BOT_JOIN_URL,
 	});
 });
 

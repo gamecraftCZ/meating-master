@@ -1,0 +1,54 @@
+.DiscordJoin
+	height: 50%
+	display: flex
+	align-items: center
+	justify-content: center
+	flex-wrap: wrap
+	padding: 20px
+	padding-top: 70px
+
+	> div
+		flex: 90%
+		text-align: center
+
+	.stepsContainer
+		width: 500px
+		margin: 0 auto
+
+		.ant-steps
+			max-width: 900px
+			min-width: 300px
+			margin: 0 auto
+
+		@media (max-width: 750px)
+			.ant-steps
+				width: 50%
+
+	.buttonContainer
+		text-align: center
+
+	.ant-page-header
+		position: absolute
+		top: 10px
+		left: 10px
+
+	.ant-btn
+		border-radius: 8px
+
+	.ant-steps-item-container
+		display: flex
+
+	.ant-steps-item-icon
+		flex-shrink: 0
+		display: flex
+		align-items: center
+		justify-content: center
+
+	.ant-steps-item
+		flex-shrink: 1
+		flex-grow: 1
+		white-space: normal !important
+		text-align: center
+
+		.ant-steps-item-container
+			text-align: center
