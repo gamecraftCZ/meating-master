@@ -1,5 +1,6 @@
 import collections
 import contextlib
+import os
 import sys
 import wave
 from typing import List
@@ -30,10 +31,13 @@ def read_wave(path: str) -> (bytes, int):
 def read_pcm(path: str) -> (bytes, int):
     # Discord audio:
     # Signed 16-bit PCM as the encoding, a Little-endian byte order, 2 Channels (Stereo) and a sample rate of 48000Hz.
-    audio = AudioSegment.from_file(path, "s16le", "pcm_s16le", sample_width=2, frame_rate=48000, channels=2)\
-                        .set_channels(1)
+    audio = AudioSegment.from_file(path, "s16le", "pcm_s16le", sample_width=2, frame_rate=48000, channels=2) \
+        .set_channels(1)
     audio.export(path.replace(".pcm", ".wav"), "wav", bitrate=48000)
-    return read_wave(path.replace(".pcm", ".wav"))
+    os.remove(path)
+    jahoda, zelena = read_wave(path.replace(".pcm", ".wav"))
+    os.remove(path.replace(".pcm", ".wav"))
+    return jahoda, zelena
 
 
 def write_wave(path, audio, sample_rate):
