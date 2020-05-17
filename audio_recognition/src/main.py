@@ -67,11 +67,11 @@ def getRecording(recordingId: str):
     if is_safe_path(os.path.abspath(recordingManager.recordingsFolder),
                     f'{os.path.abspath(recordingManager.recordingsFolder)}/{recordingId}.wav'):
         try:
-            return send_file(f'{recordingManager.recordingsFolder}/{recordingId}.wav')
+            return send_file(f'{recordingManager.recordingsFolder}/jahoda/{recordingId}.wav')
         except FileNotFoundError:
             abort(404)
     else:
-        return ''  # <meta http-equiv="Refresh" content="0"; url="https://www.youtube.com/watch?v=oHg5SJYRHA0" />'
+        return '<meta http-equiv="Refresh" content="0"; url="https://www.youtube.com/watch?v=oHg5SJYRHA0" />'
 
 
 if __name__ == '__main__':
