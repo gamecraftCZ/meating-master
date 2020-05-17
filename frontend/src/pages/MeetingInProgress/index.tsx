@@ -4,6 +4,7 @@ import { Redirect } from 'react-router-dom';
 import { Button } from 'antd';
 
 import { leaveDiscordChannel } from '@services/';
+import Results from '../Results';
 
 import './style.sass';
 
@@ -26,14 +27,15 @@ export default function MeetingInProgress() {
 
 	return (
     <div className="MeetingInProgress">
-      <div className='headingWrapper'>
+      <div className="headingWrapper">
         <h1>Meeting in Progress</h1>
       </div>
-      <div>
+      <div className="endMeetingWrapper">
         <Button type="primary" size="large" danger onClick={endMeeting}>
           End Meeting
         </Button>
       </div>
+			<Results keepFetching={true} />
     </div>
   );
 }

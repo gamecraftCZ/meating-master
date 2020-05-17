@@ -56,7 +56,7 @@ const DiscordJoin = observer(() => {
   return (
     <div className="DiscordJoin">
       <PageHeader
-        title="Connect your Discord server"
+        title="Go Back"
         onBack={() => setRedirect('/')}
       />
       <div className="stepsContainer">

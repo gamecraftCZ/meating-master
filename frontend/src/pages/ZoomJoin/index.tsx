@@ -49,7 +49,7 @@ export default function ZoomJoin() {
 	return (
     <div className="ZoomJoin">
       <PageHeader
-        title="Connect your Zoom meeting"
+        title="Go Back"
         onBack={() => setState({ toDashboard: true })}
       />
       <div className="stepsContainer">

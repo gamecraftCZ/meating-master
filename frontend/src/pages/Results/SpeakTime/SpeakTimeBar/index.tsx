@@ -6,23 +6,23 @@ import './style.sass';
 export interface ISpeakTimeBarProps {
 	minutesSpoken: number
 	name: string
-	optimalMinutesSpoken: number
+  optimalMinutesSpoken: number
+  totalMeetingTime: number
 }
 
-export default function SpeakTimeBar (props: ISpeakTimeBarProps) {
+export default function SpeakTimeBar(props: ISpeakTimeBarProps) {
+  
   return (
     <div className="SpeakTimeBar">
       <span className="name">{props.name}</span>
       <div className="progressWrapper">
         <Progress
-          percent={props.optimalMinutesSpoken}
+          percent={100 / (props.totalMeetingTime / props.optimalMinutesSpoken)}
           showInfo={false}
-          successPercent={props.minutesSpoken}
-          status={
-            Math.abs(props.minutesSpoken - props.optimalMinutesSpoken) > 20
-              ? 'exception'
-              : 'normal'
+          successPercent={
+            100 / (props.totalMeetingTime / props.minutesSpoken)
           }
+          status='exception'
         />
         <span className="minutesSpoken">
           {props.minutesSpoken} minutes spoken
