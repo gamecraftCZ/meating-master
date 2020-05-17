@@ -1,7 +1,7 @@
 import Discord from 'discord.js';
+import {channelUpdate, receiveMessageHandler, serverJoinHandler} from './utils/discord_handlers';
 import express from 'express';
 import cors from 'cors';
-import { channelUpdate, receiveMessageHandler, serverJoinHandler } from './utils/discord';
 import { BOT_JOIN_URL, PORT, WEBSOCKET_PORT } from './constants';
 import socketIo from 'socket.io';
 import http from 'http';
@@ -28,8 +28,10 @@ io.on('connection', (socket) => {
 	});
 });
 
+client.on("voiceStateUpdate", (...args) => channelUpdate(client, ...args))
+
 client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
+	console.log(`Logged in as ${client.user.tag}!`);
 });
 
 client.on("voiceStateUpdate", (...args) => channelUpdate(client, ...args))

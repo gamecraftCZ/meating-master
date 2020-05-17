@@ -13,8 +13,8 @@ def newRecording():
     data = json.loads(request.data)
     filepath = data["filepath"]
     recordingId = data["recordingId"]
-    start_timestamp = data["start_timestamp"]
-    end_timestamp = data["end_timestamp"]
+    start_timestamp = data["startTimestamp"]
+    end_timestamp = data["endTimestamp"]
     user = User(data["user"]["name"], data["user"]["id"])
 
     audio, sample_rate = read_pcm(filepath)
