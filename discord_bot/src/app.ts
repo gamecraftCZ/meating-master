@@ -1,7 +1,7 @@
 import Discord from 'discord.js';
-import {channelUpdate, receiveMessageHandler} from './utils/discord_handlers';
 import express from 'express';
 import cors from 'cors';
+import { channelUpdate, receiveMessageHandler, serverJoinHandler } from './utils/discord';
 import { BOT_JOIN_URL, PORT, WEBSOCKET_PORT } from './constants';
 import socketIo from 'socket.io';
 import http from 'http';
@@ -34,13 +34,19 @@ client.on('ready', () => {
 
 client.on("voiceStateUpdate", (...args) => channelUpdate(client, ...args))
 
-client.on('message', (message) => receiveMessageHandler(client, message));
+
 
 client.login(process.env.DISCORD_SECRET);
 
 app.get('/getDiscordBotInviteLink', (req, res) => {
 	res.status(200).json({
 		discordBotInviteLink: BOT_JOIN_URL
+	});
+});
+
+app.post('/leaveDiscordChannel', (req, res) => {
+	res.status(200).json({
+		discordBotInviteLink: BOT_JOIN_URL,
 	});
 });
 

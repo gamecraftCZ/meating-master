@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "outDir": "./public/",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "module": "commonjs",
+    "target": "es5",
+    "jsx": "react",
+    "baseUrl": ".",
+    "experimentalDecorators": true,
+    "paths": {
+      "@components/*": ["src/components/*"],
+      "@stores/*": ["src/stores/*"],
+      "@styles/*": ["src/styles/*"],
+      "@helpers/*": ["src/helpers/*"],
+      "@pages/*": ["src/pages/*"],
+      "@assets/*": ["src/assets"],
+      "@constants/*": ["src/constants"],
+      "@hooks/*": ["src/hooks"],
+      "@services/*": ["src/services"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}
