@@ -13,72 +13,90 @@ let voiceConnection: discord.VoiceConnection = null;
 let usersListening: { user: discord.User; audio }[] = [];
 
 const stopListeningUser = (user: discord.User) => {
-    console.log("Stopping listen for user: ", user.username);
-    const listener = usersListening.find(u => u.user.id == user.id)
-    if (listener) {
-        listener.audio.destroy()
-        usersListening = usersListening.filter(u => u.user.id != user.id)
+    try {
+        console.log('Stopping listen for user: ', user.username);
+        const listener = usersListening.find((u) => u.user.id == user.id);
+        if (listener) {
+            listener.audio.destroy();
+            usersListening = usersListening.filter((u) => u.user.id != user.id);
+        }
+    } catch (err) {
+        console.error('Error while stopping listening to user: ', err);
     }
 }
 
 export const serverJoinHandler = (socket: Socket) => {
-    console.log('Joined server');
-    usersListening = []
-    socket.emit('discordStepUpdate', 1);
+    try {
+        console.log('Joined server');
+        usersListening = [];
+        socket.emit('discordStepUpdate', 1);
+    } catch (err) {
+        console.error('Error inside serverJoinHandler: ', err);
+    }
 };
 
 const readAudio = (audioStream, user: discord.User) => {
-    if (!audioStream.destroyed) {
-        const recId = uuid4()
-        const filename = `${recId}.pcm`
+    try {
+        if (!audioStream.destroyed) {
+            const recId = uuid4();
+            const filename = `${recId}.pcm`;
 
-        const path = `${AUDIO_FOLDER}/${filename}`
-        const fileStream = fs.createWriteStream(path)
-        audioStream.pipe(fileStream)
+            const path = `${AUDIO_FOLDER}/${filename}`;
+            const fileStream = fs.createWriteStream(path).on('error', (err) => {
+                console.error('Error while attempting to write to file: ', err);
+            });
+            audioStream.pipe(fileStream);
 
-        setTimeout(() => {
-            audioStream.unpipe(fileStream)
-            fileStream.close()
-            axios.post("http://localhost:2986/newRecording", {
-                filepath: toAbsolutepath(path),
-                recordingId: recId,
-                startTimestamp: new Date().getTime(),
-                endTimestamp: new Date().getTime() + 3_000,
-                user: {name: user.username, id: user.id}
-            })
-            // Must be about second or two, because when user is not talking, no data is sent.
-            //  This can cause getting out of sync with the audio.
-            readAudio(audioStream, user)
-        }, 3_000)
-    } else {
-        audioStream.close()
+            setTimeout(() => {
+                audioStream.unpipe(fileStream);
+                fileStream.close();
+                axios.post('http://localhost:2986/newRecording', {
+                    filepath: toAbsolutepath(path),
+                    recordingId: recId,
+                    startTimestamp: new Date().getTime(),
+                    endTimestamp: new Date().getTime() + 3_000,
+                    user: { name: user.username, id: user.id },
+                });
+                // Must be about second or two, because when user is not talking, no data is sent.
+                //  This can cause getting out of sync with the audio.
+                readAudio(audioStream, user);
+            }, 3_000);
+        } else {
+            audioStream.close();
+        }
+    } catch (err) {
+        console.error('Error while reading audio: ', err);
     }
 }
 
 // https://discordjs.guide/voice/receiving-audio.html
 const startListeningUser = (user: discord.User) => {
-    if (usersListening.find(u => u.user.id == user.id)) {
-        return
-    }
-    console.log("Starting listen for user: ", user.username);
-    if (voiceConnection) {
-        // Must send silence to start listening. issue: https://github.com/discordjs/discord.js/issues/2929
-        const SILENCE_FRAME = Buffer.from([0xF8, 0xFF, 0xFE]);
-
-        class Silence extends Readable {
-            _read() {
-                this.push(SILENCE_FRAME);
-                this.destroy();
-            }
+    try {
+        if (usersListening.find((u) => u.user.id == user.id)) {
+            return;
         }
+        console.log('Starting listen for user: ', user.username);
+        if (voiceConnection) {
+            // Must send silence to start listening. issue: https://github.com/discordjs/discord.js/issues/2929
+            const SILENCE_FRAME = Buffer.from([0xf8, 0xff, 0xfe]);
 
-        voiceConnection.play(new Silence(), {type: 'opus'});
+            class Silence extends Readable {
+                _read() {
+                    this.push(SILENCE_FRAME);
+                    this.destroy();
+                }
+            }
 
-        // https://discordjs.guide/voice/receiving-audio.html
-        const audio = voiceConnection.receiver.createStream(user, {mode: "pcm", end: "manual"})
+            voiceConnection.play(new Silence(), { type: 'opus' });
 
-        readAudio(audio, user)
-    }
+            // https://discordjs.guide/voice/receiving-audio.html
+            const audio = voiceConnection.receiver.createStream(user, { mode: 'pcm', end: 'manual' });
+
+            readAudio(audio, user);
+        }
+    } catch (err) {
+        console.error('Error while starting to listen to user: ', err);
+    }   
 }
 
 export const channelUpdate = (
@@ -86,24 +104,28 @@ export const channelUpdate = (
     oldVoice: discord.VoiceState,
     newVoice: discord.VoiceState
 ) => {
-    usersListening = []
-    if (newVoice.member.user.id == client.user.id) {
-        return;
-    }
-
-    if (newVoice.channelID == watchedChannelId) {
-        const user = newVoice.member;
-        console.log('New user joined: ', user.user.username);
-        startListeningUser(user.user);
-    }
-    if (oldVoice.channelID == watchedChannelId) {
-        const user = newVoice.member;
-        console.log('User left: ', user.user.username);
-        if (user.user.id === client.user.id) {
-            axios.post("http://localhost:2986/endMeeting")
-            console.log("[ENDED] meeting ended - ", new Date().getTime())
+    try {
+        usersListening = [];
+        if (newVoice.member.user.id == client.user.id) {
+            return;
         }
-        stopListeningUser(user.user);
+
+        if (newVoice.channelID == watchedChannelId) {
+            const user = newVoice.member;
+            console.log('New user joined: ', user.user.username);
+            startListeningUser(user.user);
+        }
+        if (oldVoice.channelID == watchedChannelId) {
+            const user = newVoice.member;
+            console.log('User left: ', user.user.username);
+            if (user.user.id === client.user.id) {
+                axios.post('http://localhost:2986/endMeeting');
+                console.log('[ENDED] meeting ended - ', new Date().getTime());
+            }
+            stopListeningUser(user.user);
+        }
+    } catch (err) {
+        console.error('Error while handling channel update: ', err);
     }
 };
 
