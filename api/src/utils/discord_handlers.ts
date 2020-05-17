@@ -100,6 +100,10 @@ export const channelUpdate = (
     if (oldVoice.channelID == watchedChannelId) {
         const user = newVoice.member;
         console.log('User left: ', user.user.username);
+        if (user.user.id === client.user.id) {
+            axios.post("http://localhost:2986/endMeeting")
+            console.log("[ENDED] meeting ended - ", new Date().getTime())
+        }
         stopListeningUser(user.user);
     }
 };
@@ -113,6 +117,8 @@ export const receiveMessageHandler = async (client: discord.Client, message: dis
             // Only try to join the sender's voice channel if they are in one themselves
             if (message?.member?.voice?.channel) {
                 watchedChannelId = message.member.voice.channel.id;
+                axios.post("http://localhost:2986/startMeeting")
+                console.log("[STARTED] meeting started - ", new Date().getTime())
                 voiceConnection = await message.member.voice.channel.join();
                 socket.emit('discordStepUpdate', 2);
                 message.member.voice.channel.members
@@ -133,6 +139,8 @@ export const leaveChannel = (socket: Socket) => {
     try {
         socket.emit('discordStepUpdate', 0);
         if (voiceConnection) {
+            axios.post("http://localhost:2986/endMeeting")
+            console.log("[ENDED] meeting ended - ", new Date().getTime())
             voiceConnection.disconnect(); // This line gets executed successfully
         }
     } catch (err) {
