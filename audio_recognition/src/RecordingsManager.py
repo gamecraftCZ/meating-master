@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import List, Dict, DefaultDict
 from uuid import uuid4
 
-from vad_utils import detect_human_voice, Segment, frame_generator, read_wave
+from vad_utils import detect_human_voice, Segment, frame_generator, read_wave, read_pcm
 from pydub import AudioSegment
 
 
@@ -67,6 +67,9 @@ class RecordingManager:
                     toCombine.append(self.__getFramesToInclude(recording, start_timestamp, end_timestamp))
                     sampleRate = recording.sample_rate
 
+        if not toCombine:
+            return ""
+
         # Combine
         combinedFrames: List[AudioSegment or None] = [None] * ((end_timestamp - start_timestamp) // 30 + 2)
         for recording in toCombine:
@@ -79,7 +82,7 @@ class RecordingManager:
                 else:
                     combinedFrames[i] = audio
 
-        if combinedFrames:
+        if [frame for frame in combinedFrames if frame is not None]:
             finalAudio = combinedFrames[0]
             for i in range(1, len(combinedFrames)):
                 if combinedFrames[i]:
@@ -110,15 +113,17 @@ if __name__ == '__main__':
     patrik = User("Patrik", "id-18-a")
     ondra = User("Ondra", "id-1-b")
 
-    audio, sample_rate = read_wave("../testing_data/test_audio.wav")
-    recording_ondra = Recording(audio, sample_rate, "rec-O", 42_000, 102_000, ondra)
+    # audio, sample_rate = read_wave("../testing_data/test_audio.wav")
+    audio, sample_rate = read_pcm("../../_temp_audio/6208e072-6d94-4c46-8b2f-7770e5c63520.pcm")
+    recording_ondra = Recording(audio, sample_rate, "rec-O", 1_000, 15_000, ondra)
 
-    red, red_sample_rate = read_wave("../testing_data/red.wav")
-    recording_patrik = Recording(red, red_sample_rate, "rec-P", 12_000, 72_000, patrik)
+    # red, red_sample_rate = read_wave("../testing_data/red.wav")
+    red, red_sample_rate = read_pcm("../../_temp_audio/df030484-7f55-4203-8e02-bd84430bcfef.pcm")
+    recording_patrik = Recording(red, red_sample_rate, "rec-P", 10_000, 20_000, patrik)
 
     manager = RecordingManager("../testing_data/recordings")
     manager.newRecording(recording_patrik)
     manager.newRecording(recording_ondra)
 
-    file = manager.getAudio(62_000, 92_000)
+    file = manager.getAudio(10_000, 20_000)
     print("combined file: ", file)

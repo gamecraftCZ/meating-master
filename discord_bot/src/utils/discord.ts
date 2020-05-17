@@ -1,27 +1,12 @@
 import discord from "discord.js";
-import {sleep} from "./utils"
-import wav from "wav"
 import {AUDIO_FOLDER} from "../constants";
 import {v4 as uuid4} from 'uuid';
 import { Readable } from 'stream';
+import fs from 'fs';
 
 let watchedChannelId = "---";
 let voiceConnection: discord.VoiceConnection = null;
 const usersListening: { user: discord.User; audio }[] = [];
-
-const read15SecondAudio = (audioStream, user: discord.User) => {
-	sleep(2_000).then(() => {
-		const data = audioStream.read(96_000 * 2);
-
-		const filename = `${uuid4()}.wav`;
-		wav.FileWriter(`${AUDIO_FOLDER}/${filename}`, {
-			endianness: 'LE',
-			channels: 2,
-			sampleRate: 48000,
-			bitDepth: 16,
-		});
-	});
-};
 
 export const serverJoinHandler = (socket) => {
     console.log('Joined server');
@@ -32,7 +17,6 @@ export const serverJoinHandler = (socket) => {
 const startListeningUser = (user: discord.User) => {
     console.log("Starting listen for user: ", user.username);
     if (voiceConnection) {
-
         // Must send silence to start listening. issue: https://github.com/discordjs/discord.js/issues/2929
         const SILENCE_FRAME = Buffer.from([0xF8, 0xFF, 0xFE]);
         class Silence extends Readable {
@@ -62,12 +46,12 @@ const startListeningUser = (user: discord.User) => {
 }
 
 const stopListeningUser = (user: discord.User) => {
-	console.log('Stopping listen for user: ', user.username);
-	const listener = usersListening.find((u) => u.user.id == user.id);
-	if (listener) {
-		// voiceConnection.
-	}
-};
+    console.log("Stopping listen for user: ", user.username);
+    const listener = usersListening.find(u => u.user.id == user.id)
+    if (listener) {
+        listener.audio.destroy()
+    }
+}
 
 export const channelUpdate = (
 	client: discord.Client,
@@ -90,6 +74,24 @@ export const channelUpdate = (
 		stopListeningUser(user.user);
 	}
 };
+
+const read15SecondAudio = (audioStream, user: discord.User) => {
+    if (!audioStream.destroyed) {
+        const filename = `${uuid4()}.pcm`
+
+        const path = `${AUDIO_FOLDER}/${filename}`
+        const fileStream = fs.createWriteStream(path)
+        audioStream.pipe(fileStream)
+
+        setTimeout(() => {
+            audioStream.unpipe(fileStream)
+            // TODO - send audio file path to audio_recognition /newRecording
+            // Must be about second or two, because when user is not talking, no data is sent.
+            //  This can cause getting out of sync with the audio.
+            read15SecondAudio(audioStream, user)
+        }, 2_000)
+    }
+}
 
 export const receiveMessageHandler = async (client: discord.Client, message: discord.Message, socket) => {
     try {
