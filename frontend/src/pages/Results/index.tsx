@@ -1,14 +1,12 @@
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { Divider } from 'antd';
 
 import './style.sass';
 
 import SpeakTime from './SpeakTime';
 import Interruptions from './Interruptions';
-
-export interface IResultsProps {
-
-}
+import { getResults } from '@services/';
 
 const interruptions = [
 	{
@@ -23,7 +21,12 @@ const interruptions = [
 	}
 ];
 
-export default function Results (props: IResultsProps) {
+export default function Results() {
+
+	useEffect(() => {
+		getResults();
+	}, []);
+
 	return (
     <div className="Results">
       <SpeakTime optimalSpeakTime={50} />

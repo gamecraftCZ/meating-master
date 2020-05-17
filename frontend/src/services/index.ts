@@ -1,4 +1,4 @@
-import { API_URL } from '@constants/urls';
+import { API_URL, PYTHON_API_URL } from '@constants/urls';
 
 export const getDiscordBotLink = async () => {
 	try {
@@ -17,6 +17,18 @@ export const getZoomAuthLink = async () => {
     const resJson = await res.json();
 
     return resJson?.zoomAuthLink;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export const getResults = async () => {
+  try {
+		const res = await fetch(`${PYTHON_API_URL}/getInfo`);
+		const resJson = await res.json();
+		console.log('resJson: ', resJson);
+
+    return resJson;
   } catch (err) {
     console.error(err);
   }
