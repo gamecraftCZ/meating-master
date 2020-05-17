@@ -2,7 +2,7 @@
 
 - Make every meeting better by indepth analytics of who is speaking and who interrupts others.
 
-### 3 steps to run
+### 3 steps to run (work in progress)
 - Frontend
   - `cd frontend`
   - `yarn install`
