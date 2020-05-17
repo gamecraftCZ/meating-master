@@ -1,5 +1,6 @@
-discord_bot/node_modules
-discord_bot/dist
-discord_bot/.env
+api/node_modules
+api/dist
+api/.env
+frontend/node_modules
 audio_recognition/node_modules
 _temp_audio
