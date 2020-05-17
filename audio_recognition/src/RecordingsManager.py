@@ -1,12 +1,14 @@
 from collections import defaultdict
-from typing import List, Dict, DefaultDict
+from typing import List, DefaultDict
 from uuid import uuid4
 
-from vad_utils import detect_human_voice, Segment, frame_generator, read_wave, read_pcm
 from pydub import AudioSegment
+
+from vad_utils import detect_human_voice, Segment, frame_generator, read_pcm
 
 
 class User:
+    speak_time = 0
     def __init__(self, name: str, id: str):
         self.name = name
         self.id = id
