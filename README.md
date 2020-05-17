@@ -1,5 +1,7 @@
 # meating-master
 
+- Make every meeting better by indepth analytics of who is speaking and who interrupts others.
+
 ### 3 steps to run
 - Frontend
   - `cd frontend`
