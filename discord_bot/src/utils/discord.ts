@@ -1,9 +1,8 @@
 import discord from "discord.js";
-import {sleep} from "./utils"
-import wav from "wav"
 import {AUDIO_FOLDER} from "../constants";
 import {v4 as uuid4} from 'uuid';
 const { Readable } = require('stream');
+const fs = require('fs');
 
 let watchedChannelId = "---";
 let voiceConnection: discord.VoiceConnection = null;
@@ -31,7 +30,6 @@ export const channelUpdate = (client: discord.Client, oldVoice: discord.VoiceSta
 const startListeningUser = (user: discord.User) => {
     console.log("Starting listen for user: ", user.username);
     if (voiceConnection) {
-
         // Must send silence to start listening. issue: https://github.com/discordjs/discord.js/issues/2929
         const SILENCE_FRAME = Buffer.from([0xF8, 0xFF, 0xFE]);
         class Silence extends Readable {
@@ -50,39 +48,29 @@ const startListeningUser = (user: discord.User) => {
         //         console.log(`Received ${chunk.length} bytes of data.`);
         //     });
 
-
-        // const fs = require('fs');
-        // audio.pipe(fs.createWriteStream('user_audio.pcm'));
-        // const data = audio.read(96_000 * 2)
-        // console.log("data: ", data)
-
         read15SecondAudio(audio, user)
     }
 }
 
 const read15SecondAudio = (audioStream, user: discord.User) => {
-    sleep(2_000).then(() => {
-        const data = audioStream.read(96_000 * 2)
-        console.log("audioStream - data: ", data)
+    if (!audioStream.destroyed) {
+        const filename = `${uuid4()}.pcm`
 
+        const fileStream = fs.createWriteStream(`${AUDIO_FOLDER}/${filename}`)
+        audioStream.pipe(fileStream)
 
-        const filename = `${uuid4()}.wav`
-        wav.FileWriter(`${AUDIO_FOLDER}/${filename}`, {
-            "endianness": "LE",
-            "channels": 2,
-            "sampleRate": 48000,
-            "bitDepth": 16
-        })
-
-        wav.
-    })
+        setTimeout(() => {
+            audioStream.unpipe(fileStream)
+            read15SecondAudio(audioStream, user)
+        }, 15_000)
+    }
 }
 
 const stopListeningUser = (user: discord.User) => {
     console.log("Stopping listen for user: ", user.username);
     const listener = usersListening.find(u => u.user.id == user.id)
     if (listener) {
-        // voiceConnection.
+        listener.audio.destroy()
     }
 }
 
