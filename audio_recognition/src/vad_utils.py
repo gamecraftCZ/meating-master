@@ -119,7 +119,7 @@ def vad_collector(sample_rate, frame_duration_ms,
             # If we're NOTTRIGGERED and more than 90% of the frames in
             # the ring buffer are voiced frames, then enter the
             # TRIGGERED state.
-            if num_voiced > 0.9 * ring_buffer.maxlen:
+            if num_voiced > 0.93 * ring_buffer.maxlen:
                 triggered = True
                 start_timestamp = frame.timestamp
                 # sys.stdout.write('+(%s)' % (ring_buffer[0][0].timestamp,))
@@ -138,7 +138,7 @@ def vad_collector(sample_rate, frame_duration_ms,
             # If more than 90% of the frames in the ring buffer are
             # unvoiced, then enter NOTTRIGGERED and yield whatever
             # audio we've collected.
-            if num_unvoiced > 0.9 * ring_buffer.maxlen:
+            if num_unvoiced > 0.73157 * ring_buffer.maxlen:
                 # sys.stdout.write('-(%s)' % (frame.timestamp + frame.duration))
                 triggered = False
                 yield Segment(b''.join([f.bytes for f in voiced_frames]),
@@ -157,7 +157,7 @@ def vad_collector(sample_rate, frame_duration_ms,
 def detect_human_voice(audio: bytes, sample_rate: int) -> List[Segment]:
     vad = webrtcvad.Vad(3)
     frames = list(frame_generator(30, audio, sample_rate))
-    segments = vad_collector(sample_rate, 30, 300, vad, frames)
+    segments = vad_collector(sample_rate, 30, 600, vad, frames)
     return list(segments)
 
 
