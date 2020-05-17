@@ -26,7 +26,6 @@ export const getResults = async () => {
   try {
 		const res = await fetch(`${PYTHON_API_URL}/getInfo`);
 		const resJson = await res.json();
-		console.log('resJson: ', resJson);
 
     return resJson;
   } catch (err) {
