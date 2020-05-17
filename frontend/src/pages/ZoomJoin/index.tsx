@@ -6,7 +6,7 @@ import { Button, PageHeader, Steps } from 'antd';
 import './style.sass';
 import store from '@stores/index.ts';
 import { useWindowSize } from '@hooks/index.ts';
-import { getZoomAuthLink } from '@services/*';
+import { getZoomAuthLink } from '@services/index.ts';
 
 const { Step } = Steps;
 
