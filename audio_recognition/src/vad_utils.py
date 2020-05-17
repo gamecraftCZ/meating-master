@@ -10,9 +10,10 @@ import webrtcvad
 # Inspiration: https://github.com/wiseman/py-webrtcvad/blob/master/example.py
 
 
-def read_wave(path):
+def read_wave(path) -> (bytes, int):
     """Reads a .wav file.
     Takes the path, and returns (PCM audio data, sample rate).
+    :returns (data, sample_rate)
     """
     with contextlib.closing(wave.open(path, 'rb')) as wf:
         num_channels = wf.getnchannels()
@@ -143,12 +144,16 @@ def vad_collector(sample_rate, frame_duration_ms,
         yield Segment(b''.join([f.bytes for f in voiced_frames]), start_timestamp, frame.timestamp + frame.duration)
 
 
-def detect_human_voice(filename: str) -> List[Segment]:
-    audio, sample_rate = read_wave(filename)
+def detect_human_voice(audio: bytes, sample_rate: int) -> List[Segment]:
     vad = webrtcvad.Vad(3)
     frames = list(frame_generator(30, audio, sample_rate))
     segments = vad_collector(sample_rate, 30, 300, vad, frames)
     return list(segments)
+
+
+def detect_human_voice_from_file(filename: str) -> List[Segment]:
+    audio, sample_rate = read_wave(filename)
+    return detect_human_voice(audio, sample_rate)
 
 
 # Example: extract all the parts, where voice is present
