@@ -150,7 +150,7 @@ class RecordingManager:
         # Save
         fileId = str(uuid4())
         filename = f"{fileId}.wav"
-        finalAudio.export(f"{self.recordingsFolder}/{filename}", format="wav")
+        finalAudio.export(f"{self.recordingsFolder}/jahoda/{filename}", format="wav")
         return fileId
 
 
@@ -170,9 +170,6 @@ class RecordingManager:
     @staticmethod
     def __getOverlap(a: RecordingPart, b: RecordingPart):
         return max(0, min(a.end_timestamp, b.end_timestamp) - max(a.start_timestamp, b.start_timestamp))
-
-
-########################################################################################################################
 
 
 # For testing purposes

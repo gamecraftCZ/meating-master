@@ -23,6 +23,7 @@ const stopListeningUser = (user: discord.User) => {
 
 export const serverJoinHandler = (socket: Socket) => {
     console.log('Joined server');
+    usersListening = []
     socket.emit('discordStepUpdate', 1);
 };
 
@@ -41,8 +42,8 @@ const readAudio = (audioStream, user: discord.User) => {
             axios.post("http://localhost:2986/newRecording", {
                 filepath: toAbsolutepath(path),
                 recordingId: recId,
-                startTimestamp: new Date().getUTCMilliseconds(),
-                endTimestamp: new Date().getUTCMilliseconds() + 3_000,
+                startTimestamp: new Date().getTime(),
+                endTimestamp: new Date().getTime() + 3_000,
                 user: {name: user.username, id: user.id}
             }).catch(e => console.error("Cant send audio for recognition."))
             // Must be about second or two, because when user is not talking, no data is sent.
@@ -85,6 +86,7 @@ export const channelUpdate = (
     oldVoice: discord.VoiceState,
     newVoice: discord.VoiceState
 ) => {
+    usersListening = []
     if (newVoice.member.user.id == client.user.id) {
         console.log('BOT will not be listening to itself.');
         return;
@@ -98,6 +100,10 @@ export const channelUpdate = (
     if (oldVoice.channelID == watchedChannelId) {
         const user = newVoice.member;
         console.log('User left: ', user.user.username);
+        if (user.user.id === client.user.id) {
+            axios.post("http://localhost:2986/endMeeting")
+            console.log("[ENDED] meeting ended - ", new Date().getTime())
+        }
         stopListeningUser(user.user);
     }
 };
@@ -111,11 +117,13 @@ export const receiveMessageHandler = async (client: discord.Client, message: dis
             // Only try to join the sender's voice channel if they are in one themselves
             if (message?.member?.voice?.channel) {
                 watchedChannelId = message.member.voice.channel.id;
+                axios.post("http://localhost:2986/startMeeting")
+                console.log("[STARTED] meeting started - ", new Date().getTime())
                 voiceConnection = await message.member.voice.channel.join();
                 socket.emit('discordStepUpdate', 2);
-                //message.member.voice.channel.members
-                  //  .filter(m => m.user.id != client.user.id)  // To net listen to itself
-                    //.forEach(member => startListeningUser(member.user));
+                message.member.voice.channel.members
+                   .filter(m => m.user.id != client.user.id)  // To not listen to itself
+                   .forEach(member => startListeningUser(member.user));
                 await message.delete(); // don't fucking move
             } else {
                 message.reply('You need to join a voice channel first!');
@@ -127,9 +135,12 @@ export const receiveMessageHandler = async (client: discord.Client, message: dis
 }
 
 export const leaveChannel = (socket: Socket) => {
+    usersListening = []
     try {
         socket.emit('discordStepUpdate', 0);
         if (voiceConnection) {
+            axios.post("http://localhost:2986/endMeeting")
+            console.log("[ENDED] meeting ended - ", new Date().getTime())
             voiceConnection.disconnect(); // This line gets executed successfully
         }
     } catch (err) {

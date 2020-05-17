@@ -1,32 +1,27 @@
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { Divider } from 'antd';
 
 import './style.sass';
 
 import SpeakTime from './SpeakTime';
 import Interruptions from './Interruptions';
+import { getResults } from '@services/';
 
-export interface IResultsProps {
+export default function Results() {
+	const [users, setUsers] = useState([]);
+	const [interruptions, setInterruptions] = useState([]);
 
-}
+	useEffect(() => {
+		getResults().then(results => {
+			setUsers(results.users);
+			setInterruptions(results.interruptions);
+		});
+	}, []);
 
-const interruptions = [
-	{
-		interruptee: 'Ondra',
-		interruptor: 'Patrik',
-		audioId: ''
-	},
-	{
-		interruptee: 'David',
-		interruptor: 'Dan',
-		audioId: ''
-	}
-];
-
-export default function Results (props: IResultsProps) {
 	return (
     <div className="Results">
-      <SpeakTime optimalSpeakTime={50} />
+			<SpeakTime optimalSpeakTime={34.7} users={users} totalMeetingTime={100} />
 			
 			<Divider style={{ margin: '5vh 0' }}/>
 

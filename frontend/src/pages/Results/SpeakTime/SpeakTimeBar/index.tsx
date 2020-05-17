@@ -15,18 +15,18 @@ export default function SpeakTimeBar (props: ISpeakTimeBarProps) {
       <span className="name">{props.name}</span>
       <div className="progressWrapper">
         <Progress
-          percent={props.minutesSpoken}
+          percent={props.optimalMinutesSpoken}
           showInfo={false}
-          trailColor="white"
+          successPercent={props.minutesSpoken}
           status={
             Math.abs(props.minutesSpoken - props.optimalMinutesSpoken) > 20
               ? 'exception'
-              : Math.abs(props.minutesSpoken - props.optimalMinutesSpoken) > 5
-              ? 'normal'
-              : 'success'
+              : 'normal'
           }
         />
-        <span className='minutesSpoken'>{props.minutesSpoken} minutes spoken</span>
+        <span className="minutesSpoken">
+          {props.minutesSpoken} minutes spoken
+        </span>
       </div>
     </div>
   );

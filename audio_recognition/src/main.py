@@ -1,5 +1,6 @@
 import json
 import os
+from time import time
 
 from flask import Flask, request, send_file, abort
 
@@ -19,6 +20,23 @@ def is_safe_path(basedir, path, follow_symlinks=True):
 app = Flask(__name__)
 
 recordingManager = RecordingManager("../../_temp_audio")
+
+meetingStart = None
+meetingEnd = None
+@app.route('/startMeeting', methods=["POST"])
+def startMeeting():
+    global meetingStart
+    global meetingEnd
+    meetingStart = time()
+    meetingEnd = None
+    return "Ahoj Ondro"
+
+@app.route('/endMeeting', methods=["POST"])
+def endMeeting():
+    global meetingStart
+    global meetingEnd
+    meetingEnd = time()
+    return "Okajda, Kokajda"
 
 
 @app.route('/newRecording', methods=["POST"])
@@ -40,6 +58,7 @@ def newRecording():
 def getInfo():
     return app.response_class(
         response=json.dumps({
+            "meeting_length": ((meetingEnd or time()) - (meetingStart or time())) or "Ahojky Ondro",
             "users": [{"name": u.name, "id": u.id, "talkTime": u.speak_time}
                       for u in recordingManager.users.values()],
             "interruptions":
@@ -67,11 +86,11 @@ def getRecording(recordingId: str):
     if is_safe_path(os.path.abspath(recordingManager.recordingsFolder),
                     f'{os.path.abspath(recordingManager.recordingsFolder)}/{recordingId}.wav'):
         try:
-            return send_file(f'{recordingManager.recordingsFolder}/{recordingId}.wav')
+            return send_file(f'{recordingManager.recordingsFolder}/jahoda/{recordingId}.wav')
         except FileNotFoundError:
             abort(404)
     else:
-        return ''  # <meta http-equiv="Refresh" content="0"; url="https://www.youtube.com/watch?v=oHg5SJYRHA0" />'
+        return '<meta http-equiv="Refresh" content="0"; url="https://www.youtube.com/watch?v=oHg5SJYRHA0" />'
 
 
 if __name__ == '__main__':
