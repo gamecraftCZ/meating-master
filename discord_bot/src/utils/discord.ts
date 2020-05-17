@@ -62,9 +62,9 @@ const read15SecondAudio = (audioStream, user: discord.User) => {
 
         setTimeout(() => {
             audioStream.unpipe(fileStream)
-            // TODO - send audio file path to audio_recognition
-            // TODO - change to about second or 2, because when user is not talking, nothing is sent.
-            //  this can cause getting out of sync with the audio.
+            // TODO - send audio file path to audio_recognition /newRecording
+            // Must be about second or two, because when user is not talking, no data is sent.
+            //  This can cause getting out of sync with the audio.
             read15SecondAudio(audioStream, user)
         }, 2_000)
     }
