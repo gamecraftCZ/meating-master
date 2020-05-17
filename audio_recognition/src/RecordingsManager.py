@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, DefaultDict
+from typing import List, DefaultDict, Dict
 from uuid import uuid4
 
 from pydub import AudioSegment
@@ -9,6 +9,7 @@ from vad_utils import detect_human_voice, Segment, frame_generator, read_pcm
 
 class User:
     speak_time = 0
+
     def __init__(self, name: str, id: str):
         self.name = name
         self.id = id
@@ -34,13 +35,35 @@ class RecordingPart:
     @staticmethod
     def fromSegment(recording: Recording, segment: Segment) -> "RecordingPart":
         return RecordingPart(recording,
-                             recording.start_timestamp + segment.start_timestamp,
-                             recording.start_timestamp + segment.end_timestamp)
+                             recording.start_timestamp + segment.start_timestamp * 1000,
+                             recording.start_timestamp + segment.end_timestamp * 1000)
+
+    def getLength(self):
+        return self.end_timestamp - self.start_timestamp
+
+
+class Interruption:
+    def __init__(self, recordingManager: "RecordingManager",
+                 start_timestamp: int, end_timestamp: int,
+                 from_user: User, to_user: User):
+        self.start_timestamp = start_timestamp
+        self.end_timestamp = end_timestamp
+        self.from_user = from_user
+        self.to_user = to_user
+        self.recording_id = recordingManager.getAudio(start_timestamp, end_timestamp)
+
+
+class Jahoda:
+    def append(self, data):
+        print(f"IntJeMint: ({data.start_timestamp} - {data.end_timestamp}) | "
+              f"{data.from_user.name} INTERUPTED {data.to_user.name} | redId: {data.recording_id}")
 
 
 class RecordingManager:
+    users: Dict[str, User] = {}
     recordings: DefaultDict[str, List[Recording]] = defaultdict(list)
     recording_parts_with_voice: DefaultDict[str, List[RecordingPart]] = defaultdict(list)
+    interruptions = Jahoda()  #: List[Interruption]
 
     def __init__(self, recordingsFolder: str):
         self.recordingsFolder = recordingsFolder
@@ -50,15 +73,43 @@ class RecordingManager:
         Add new Recording clip to the Manager.
         """
         self.recordings[rec.user.id].append(rec)
+        self.recordings[rec.user.id] = self.recordings[rec.user.id][-10:]
 
-        partsWithVoice = detect_human_voice(rec.audio, rec.sample_rate)
-        self.recording_parts_with_voice[rec.user.id].extend(
-            [RecordingPart.fromSegment(rec, part) for part in partsWithVoice])
+        if not self.users.get(rec.user.id):
+            self.users[rec.user.id] = rec.user
+
+        segmentsWithVoice = detect_human_voice(rec.audio, rec.sample_rate)
+        partsWithVoice = [RecordingPart.fromSegment(rec, part) for part in segmentsWithVoice]
+        self.recording_parts_with_voice[rec.user.id].extend(partsWithVoice)
+        self.recording_parts_with_voice[rec.user.id] = self.recording_parts_with_voice[rec.user.id][-50:]
+
+        self.users[rec.user.id].speak_time += sum([r.getLength() for r in partsWithVoice])
+
+        # Check interruptions
+        # for new_part in partsWithVoice:
+        #     for old_part in self.__getOtherUsersRecordingParts(rec.user.id):
+        #         if self.__getOverlap(new_part, old_part) > 100:
+        #             start = max(0, min(new_part.start_timestamp, old_part.start_timestamp) - 2000)
+        #             end = max(new_part.end_timestamp, old_part.end_timestamp) + 2000
+        #             if old_part.start_timestamp < new_part.start_timestamp:
+        #                 self.interruptions.append(
+        #                     Interruption(self, start, end, new_part.recording.user, old_part.recording.user))
+        #             else:
+        #                 self.interruptions.append(
+        #                     Interruption(self, start, end, old_part.recording.user, new_part.recording.user))
+
+    def __getOtherUsersRecordingParts(self, current_user_id: str) -> List[RecordingPart]:
+        recordings = []
+        for userId in self.recording_parts_with_voice:
+            if userId != current_user_id:
+                parts_with_voice = self.recording_parts_with_voice[userId][-10:]
+                recordings.extend(parts_with_voice)
+        return recordings
 
     def getAudio(self, start_timestamp: int, end_timestamp: int) -> str:
         """
         Combine recordings from some timestamp to one.
-        :returns CombinedFilename
+        :returns RecordingId
         """
         toCombine = []
         sampleRate = 0
@@ -73,7 +124,7 @@ class RecordingManager:
             return ""
 
         # Combine
-        combinedFrames: List[AudioSegment or None] = [None] * ((end_timestamp - start_timestamp) // 30 + 2)
+        combinedFrames: List[AudioSegment or None] = [None] * int((end_timestamp - start_timestamp) // 30 + 2)
         for recording in toCombine:
             for i, data in enumerate(recording):
                 if not data:
@@ -84,22 +135,24 @@ class RecordingManager:
                 else:
                     combinedFrames[i] = audio
 
-        if [frame for frame in combinedFrames if frame is not None]:
-            finalAudio = combinedFrames[0]
-            for i in range(1, len(combinedFrames)):
-                if combinedFrames[i]:
-                    finalAudio += combinedFrames[i]
+        combinedFramesWithoutNones = [frame for frame in combinedFrames if frame is not None]
+        if combinedFramesWithoutNones:
+            finalAudio = combinedFramesWithoutNones[0]
+            for i in range(1, len(combinedFramesWithoutNones)):
+                if combinedFramesWithoutNones[i]:
+                    finalAudio += combinedFramesWithoutNones[i]
         else:
             return ""
 
         # Save
-        filename = f"{uuid4()}.wav"
+        fileId = str(uuid4())
+        filename = f"{fileId}.wav"
         finalAudio.export(f"{self.recordingsFolder}/{filename}", format="wav")
-        return f"{self.recordingsFolder}/{filename}"
+        return fileId
 
     @staticmethod
     def __getFramesToInclude(recording: Recording, start_timestamp: int, end_timestamp: int) -> List[bytes or None]:
-        includedFrames = [None] * ((recording.start_timestamp - start_timestamp) // 30)
+        includedFrames = [None] * int((recording.start_timestamp - start_timestamp) // 30)
         for frame in frame_generator(30, recording.audio, recording.sample_rate):
             frameTimestamp = recording.start_timestamp + frame.timestamp * 1000
             if start_timestamp < frameTimestamp < end_timestamp:
@@ -108,6 +161,13 @@ class RecordingManager:
                 else:
                     includedFrames.append(frame.bytes)
         return includedFrames
+
+    @staticmethod
+    def __getOverlap(a: RecordingPart, b: RecordingPart):
+        return max(0, min(a.end_timestamp, b.end_timestamp) - max(a.start_timestamp, b.start_timestamp))
+
+
+########################################################################################################################
 
 
 # For testing purposes

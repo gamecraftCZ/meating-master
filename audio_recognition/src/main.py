@@ -4,11 +4,11 @@ from flask import Flask, request
 from RecordingsManager import RecordingManager, User, Recording
 from vad_utils import read_pcm
 from RecordingsManager import RecordingManager
-from interuptions import users, interruptions
 
 app = Flask(__name__)
 
 recordingManager = RecordingManager("../../_temp_audio")
+
 
 @app.route('/newRecording', methods=["POST"])
 def newRecording():
@@ -25,25 +25,23 @@ def newRecording():
     return "OK"
 
 
-
-@app.route('/getInfo')
+@app.route('/getInfo', methods=["GET"])
 def getInfo():
     return json.dumps({
-        "users": [{
-            {"name": u.name, "id": u.id, "talkTime": u.speak_time}
-        } for u in users],
-        "interruptions":
-            [{
-                "from": {
-                    "id": i.from_user.id,
-                    "name": i.from_user.name
-                },
-                "to": {
-                    "id": i.to_user.id,
-                    "name": i.to_user.name
-                },
-                "recordingId": i.recording_id
-            } for i in interruptions]
+        "users": [{"name": u.name, "id": u.id, "talkTime": u.speak_time}
+                  for u in recordingManager.users.values()],
+        # "interruptions":
+        #     [{
+        #         "from": {
+        #             "id": i.from_user.id,
+        #             "name": i.from_user.name
+        #         },
+        #         "to": {
+        #             "id": i.to_user.id,
+        #             "name": i.to_user.name
+        #         },
+        #         "recordingId": i.recording_id
+        #     } for i in interruptions]
     })
 
 
