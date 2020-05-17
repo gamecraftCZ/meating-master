@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { Redirect } from 'react-router-dom';
 import { Button } from 'antd';
 
+import { leaveDiscordChannel } from '@services/';
+
 import './style.sass';
 
 export default function MeetingInProgress() {
@@ -11,7 +13,7 @@ export default function MeetingInProgress() {
 	});
 
 	const endMeeting = async () => {
-		
+		await leaveDiscordChannel();
 
 		setState({
 			redirect: '/results'
