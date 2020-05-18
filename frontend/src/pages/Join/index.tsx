@@ -6,25 +6,26 @@ import ZoomLogo from '@assets/icons/zoom-logo.png';
 import DiscordLogo from '@assets/icons/discord-logo.png';
 
 import './style.sass';
-import { robust } from '@helpers/history';
+import { router } from '@helpers/history';
+import { observer } from 'mobx-react';
 
 const { Title } = Typography;
 
-export default function Join() {
+export const Join: React.FC = observer(() => {
   return (
     <div className="Join">
       <Title>Select a meeting platform:</Title>
       <div className="buttonsContainer">
         <div>
           <JoinButton
-            to={robust.createPath('JOIN_DISCORD')}
+            to={router.path('JOIN_DISCORD')}
             img={DiscordLogo}
             label="Discord"
           />
         </div>
         <div>
           <JoinButton
-            to={robust.createPath('JOIN_ZOOM')}
+            to={router.path('JOIN_ZOOM')}
             img={ZoomLogo}
             label="Zoom"
           />
@@ -32,4 +33,4 @@ export default function Join() {
       </div>
     </div>
   );
-}
+});

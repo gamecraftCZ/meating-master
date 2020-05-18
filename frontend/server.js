@@ -2,12 +2,12 @@ var webpack = require('webpack');
 var WebpackDevServer = require('webpack-dev-server');
 var config = require('./webpack.config');
 
-const PORT = 3000;
+const PORT = 3301;
 
 new WebpackDevServer(webpack(config), {
   publicPath: config.output.publicPath,
-  hot: false,
-  historyApiFallback: true
+  hot: true,
+  historyApiFallback: true,
 }).listen(PORT, 'localhost', function (err, result) {
   if (err) {
     console.log(err);

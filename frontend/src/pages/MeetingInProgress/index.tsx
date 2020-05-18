@@ -1,29 +1,17 @@
 import * as React from 'react';
-import { useState } from 'react';
-import { Redirect } from 'react-router-dom';
 import { Button } from 'antd';
 
 import { leaveDiscordChannel } from '@services/';
-import Results from '../Results';
+import { Results } from '../Results';
 
 import './style.sass';
-import { robust } from '@helpers/history';
-import { RobustKeys } from 'robust-react-router/dist/typescriptMagic';
+import { router } from '@helpers/history';
 
-export default function MeetingInProgress() {
-  const [state, setState] = useState<{ redirect: RobustKeys<typeof robust> }>();
-
+export function MeetingInProgress() {
   const endMeeting = async () => {
     await leaveDiscordChannel();
-
-    setState({
-      redirect: 'RESULTS',
-    });
+    router.redirect('RESULTS');
   };
-
-  if (state.redirect) {
-    return <Redirect to={state.redirect} />;
-  }
 
   return (
     <div className="MeetingInProgress">

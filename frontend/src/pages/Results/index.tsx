@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { Redirect } from 'react-router-dom';
 import { Divider, PageHeader } from 'antd';
 
 import './style.sass';
@@ -8,13 +7,11 @@ import './style.sass';
 import SpeakTime from './SpeakTime';
 import Interruptions from './Interruptions';
 import { getResults } from '@services/';
-import { robust } from '@helpers/history';
+import { router } from '@helpers/history';
 
-interface IResultProps {
-  keepFetching: boolean;
-}
-
-export default function Results(props) {
+export const Results: React.FC<{ keepFetching: boolean }> = ({
+  keepFetching,
+}) => {
   const [users, setUsers] = useState([]);
   const [interruptions, setInterruptions] = useState([]);
   const [totalMeetingTime, setTotalMeetingTime] = useState(0);
@@ -35,7 +32,7 @@ export default function Results(props) {
   useEffect(() => {
     fetchResults();
 
-    if (props.keepFetching) {
+    if (keepFetching) {
       setMyInterval(setInterval(fetchResults, 3000));
     }
 
@@ -46,7 +43,7 @@ export default function Results(props) {
 
   return (
     <div className="Results">
-      <PageHeader title="Go Back" onBack={() => robust.pushPath('JOIN')} />
+      <PageHeader title="Go Back" onBack={() => router.redirect('JOIN')} />
       <SpeakTime
         optimalSpeakTime={optimalMeetingTime}
         users={users}
@@ -58,4 +55,4 @@ export default function Results(props) {
       <Interruptions interruptions={interruptions} />
     </div>
   );
-}
+};

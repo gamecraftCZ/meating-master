@@ -7,11 +7,11 @@ import './style.sass';
 import store from '@stores/index.ts';
 import { useWindowSize } from '@hooks/index.ts';
 import { getZoomAuthLink } from '@services/index.ts';
-import { robust } from '@helpers/history';
+import { router } from '@helpers/history';
 
 const { Step } = Steps;
 
-export default function ZoomJoin() {
+export function ZoomJoin() {
   const [state, setState] = useState({
     toDashboard: false,
   });
@@ -26,7 +26,7 @@ export default function ZoomJoin() {
   }, []);
 
   if (state.toDashboard) {
-    return <Redirect to={robust.createPath} />;
+    return <Redirect to={router.path('JOIN')} />;
   }
 
   const renderConnectButton = () => {

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import ReactAudioPlayer from 'react-audio-player';
-import { useEffect } from 'react';
 
 import './style.sass';
 import { IInterruptionData } from '../index';

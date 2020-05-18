@@ -1,20 +1,21 @@
 import { createBrowserHistory } from 'history';
-import { createRouter } from 'robust-react-router';
-import Join from '@pages/Join';
-import DiscordJoin from '@pages/DiscordJoin';
-import Results from '@pages/Results';
-import MeetingInProgress from '@pages/MeetingInProgress';
+import { createRobust } from 'robust-react-router';
+import { Join } from '@pages/Join';
+import { DiscordJoin } from '@pages/DiscordJoin';
+import { Results } from '@pages/Results';
+import { MeetingInProgress } from '@pages/MeetingInProgress';
+import { ZoomJoin } from '@pages/ZoomJoin';
 
 const history = createBrowserHistory();
 
-export const robust = createRouter(
+export const router = createRobust(
   [
     { path: '/', key: 'JOIN', exact: true, component: Join },
     {
-      path: '/zoom-join/:id',
+      path: '/zoom-join',
       key: 'JOIN_ZOOM',
       exact: true,
-      component: Join,
+      component: ZoomJoin,
     },
     {
       path: '/discord-join',

@@ -15,10 +15,10 @@
       "@styles/*": ["src/styles/*"],
       "@helpers/*": ["src/helpers/*"],
       "@pages/*": ["src/pages/*"],
-      "@assets/*": ["src/assets"],
-      "@constants/*": ["src/constants"],
-      "@hooks/*": ["src/hooks"],
-      "@services/*": ["src/services"]
+      "@assets/*": ["src/assets/*"],
+      "@constants/*": ["src/constants/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@services/*": ["src/services/*"]
     }
   },
   "exclude": ["node_modules", "dist"]
