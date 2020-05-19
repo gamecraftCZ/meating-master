@@ -1,5 +1,5 @@
 import { createBrowserHistory } from 'history';
-import { createRobust } from 'robust-react-router';
+import { createRobustRouter } from 'robust-react-router';
 import { Join } from '@pages/Join';
 import { DiscordJoin } from '@pages/DiscordJoin';
 import { Results } from '@pages/Results';
@@ -8,7 +8,7 @@ import { ZoomJoin } from '@pages/ZoomJoin';
 
 const history = createBrowserHistory();
 
-export const router = createRobust(
+export const router = createRobustRouter(
   [
     { path: '/', key: 'JOIN', exact: true, component: Join },
     {
