@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/opus": "^0.3.2",
+    "@discordjs/opus": "^0.8.0",
     "@types/socket.io": "^2.1.5",
     "axios": "^0.19.2",
     "cors": "^2.8.5",
